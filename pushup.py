@@ -33,16 +33,17 @@ def draw(point1, point2):
 count = 0
 position = 'up'
 angle, startAngle, endAngle =None, None, None
+exercise = 'pull up'
 
 
 def push_pull(pull=False):
-    start = 12
-    end = 48
+    global count, position, angle, startAngle, endAngle, volBar, volPer
+    start = 183
+    end = 300
     if pull:
-        start = 12
-        end = 48
+        start = 40
+        end = 165
 
-    global count, position, angle, startAngle, endAngle
     startAngle, endAngle = start, end
 
     draw(points[11], points[13])
@@ -50,12 +51,35 @@ def push_pull(pull=False):
     draw(points[12], points[14])
     draw(points[14], points[16])
 
-    angle = calc_angle(np.array(points[11][1:]), np.array(points[12][1:]), np.array(points[15][1:]))
+    # angle = calc_angle(np.array(points[11][1:]), np.array(points[12][1:]), np.array(points[15][1:]))
+    angle = calc_angle(np.array(points[11][1:]), np.array(points[13][1:]), np.array(points[15][1:]))
 
     if points[12][2] and points[11][2] >= points[14][2] and points[13][2]:
         position = 'down'
 
     if (points[12][2] and points[11][2] <= points[14][2] and points[13][2]) and position == 'down':
+         count+=1
+         position = 'up'
+
+
+def abdominal():
+    global count, position, angle, startAngle, endAngle, volBar, volPer
+    start = 80
+    end = 170
+    startAngle, endAngle = start, end
+
+    draw(points[11], points[23])
+    draw(points[23], points[25])
+    draw(points[12], points[24])
+    draw(points[24], points[26])
+    draw(points[23], points[24])
+
+    angle = calc_angle(np.array(points[11][1:]), np.array(points[23][1:]), np.array(points[25][1:]))
+
+    if points[25][2] and points[26][2] >= points[23][2] and points[24][2]:
+        position = 'down'
+
+    if (points[25][2] and points[26][2] <= points[23][2] and points[24][2]) and position == 'down':
          count+=1
          position = 'up'
 
@@ -74,12 +98,23 @@ while cap.isOpened():
         break
     frame = detector.estimate(frame, draw=False)
     points = detector.findPostions(frame, draw=False)
-    if len(points)>0:
+    if len(points) > 0:
+        if exercise == 'push up':
+            push_pull()
+            volBar = np.interp(angle, [startAngle, endAngle], [400, 150])
+            volPer = np.interp(angle, [startAngle, endAngle], [0, 100])
+        elif exercise == 'pull up':
+            push_pull(pull=True)
+            volBar = np.interp(angle, [startAngle, endAngle], [150, 400])
+            volPer = np.interp(angle, [startAngle, endAngle], [100, 0])
+        elif exercise == 'abdominal':
+            abdominal()
+            volBar = np.interp(angle, [startAngle, endAngle], [150, 400])
+            volPer = np.interp(angle, [startAngle, endAngle], [100, 0])
 
-        push_up()
+        cv.putText(frame, str(angle), (200, 60), cv.FONT_HERSHEY_COMPLEX, 1, (50, 50, 50), 2)
+
         # bar display
-        volBar = np.interp(angle, [startAngle, endAngle], [150, 400])
-        volPer = np.interp(angle, [startAngle, endAngle], [100, 0])
 
         cv.rectangle(frame, (50, 150), (60, 400), (230, 230, 230), cv.FILLED)
         cv.rectangle(frame, (50, int(volBar)), (60, 400), (30, 30, 30), cv.FILLED)
@@ -93,7 +128,7 @@ while cap.isOpened():
         else:
             cv.putText(frame, str(count), (40, 50), cv.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
 
-    writer.write(frame)
+    # writer.write(frame)
     cv.imshow('frame', frame)
     if cv.waitKey(1) == 27:
         break
