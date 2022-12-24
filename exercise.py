@@ -9,15 +9,7 @@ detector = PoseDetector()
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('-e', '--exercise', default='push',  help='chose from push, pull and abdominal', type=str)
-args=parser.parse_args()
-
-
-def pixelInCm(x1, y1, x2, y2):
-    dx = x1-x2
-    dy = y1-y2
-    pixels = np.sqrt(dx*dx+dy*dy)
-    pixel = pixels/30
-    return pixel
+args = parser.parse_args()
 
 
 def calc_angle(a, b, c):
