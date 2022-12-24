@@ -37,6 +37,11 @@ position = None
 
 cap = cv.VideoCapture(0)
 
+fourcc = cv.VideoWriter_fourcc(*'MP4V')
+width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+writer = cv.VideoWriter('data/pushup.mp4', fourcc, 30, (width, height))
+
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
@@ -80,7 +85,11 @@ while cap.isOpened():
         else:
             cv.putText(frame, str(count), (40, 50), cv.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
 
-
+    writer.write(frame)
     cv.imshow('frame', frame)
     if cv.waitKey(1) == 27:
         break
+
+writer.release()
+cap.release()
+cv.destroyAllWindows()
