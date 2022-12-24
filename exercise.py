@@ -3,7 +3,13 @@ from poseModule import PoseDetector
 import numpy as np
 import math
 import os
+import argparse
+
 detector = PoseDetector()
+
+parser = argparse.ArgumentParser(description='')
+parser.add_argument('-e', '--exercise', default='push',  help='chose from push, pull and abdominal', type=str)
+args=parser.parse_args()
 
 
 def pixelInCm(x1, y1, x2, y2):
@@ -51,7 +57,6 @@ def push_pull(pull=False):
     draw(points[12], points[14])
     draw(points[14], points[16])
 
-    # angle = calc_angle(np.array(points[11][1:]), np.array(points[12][1:]), np.array(points[15][1:]))
     angle = calc_angle(np.array(points[11][1:]), np.array(points[13][1:]), np.array(points[15][1:]))
 
     if points[12][2] and points[11][2] >= points[14][2] and points[13][2]:
@@ -99,23 +104,20 @@ while cap.isOpened():
     frame = detector.estimate(frame, draw=False)
     points = detector.findPostions(frame, draw=False)
     if len(points) > 0:
-        if exercise == 'push up':
+        if args.exercise == 'push':
             push_pull()
             volBar = np.interp(angle, [startAngle, endAngle], [400, 150])
             volPer = np.interp(angle, [startAngle, endAngle], [0, 100])
-        elif exercise == 'pull up':
+        elif args.exercise == 'pull':
             push_pull(pull=True)
             volBar = np.interp(angle, [startAngle, endAngle], [150, 400])
             volPer = np.interp(angle, [startAngle, endAngle], [100, 0])
-        elif exercise == 'abdominal':
+        elif args.exercise == 'abdominal':
             abdominal()
             volBar = np.interp(angle, [startAngle, endAngle], [150, 400])
             volPer = np.interp(angle, [startAngle, endAngle], [100, 0])
 
-        cv.putText(frame, str(angle), (200, 60), cv.FONT_HERSHEY_COMPLEX, 1, (50, 50, 50), 2)
-
         # bar display
-
         cv.rectangle(frame, (50, 150), (60, 400), (230, 230, 230), cv.FILLED)
         cv.rectangle(frame, (50, int(volBar)), (60, 400), (30, 30, 30), cv.FILLED)
         cv.putText(frame, str(int(volPer)) + "%", (88, int(volBar)), cv.FONT_HERSHEY_COMPLEX, 1, (50, 50, 50), 2)
@@ -128,7 +130,7 @@ while cap.isOpened():
         else:
             cv.putText(frame, str(count), (40, 50), cv.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
 
-    # writer.write(frame)
+    writer.write(frame)
     cv.imshow('frame', frame)
     if cv.waitKey(1) == 27:
         break
